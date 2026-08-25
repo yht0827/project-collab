@@ -71,7 +71,7 @@ public class TaskService {
 		return TaskDto.Response.from(task);
 	}
 
-성	// 작업 수정 (담당자 본인 또는 OWNER, ADMIN / 동시 수정 시 409 Conflict)
+	// 작업 수정 (담당자 본인 또는 OWNER, ADMIN / 동시 수정 시 409 Conflict)
 	@Transactional
 	public TaskDto.Response updateTask(Long currentUserId, Long projectId, Long taskId, TaskDto.UpdateRequest request) {
 		// 1. 요청자 멤버 정보 및 작업 조회
