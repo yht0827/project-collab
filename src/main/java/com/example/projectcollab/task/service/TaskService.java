@@ -71,7 +71,7 @@ public class TaskService {
 		return TaskDto.Response.from(task);
 	}
 
-	// 작업 수정 (담당자 본인 또는 OWNER, ADMIN)
+성	// 작업 수정 (담당자 본인 또는 OWNER, ADMIN / 동시 수정 시 409 Conflict)
 	@Transactional
 	public TaskDto.Response updateTask(Long currentUserId, Long projectId, Long taskId, TaskDto.UpdateRequest request) {
 		// 1. 요청자 멤버 정보 및 작업 조회
@@ -84,7 +84,7 @@ public class TaskService {
 		// 3. 변경할 담당자 조회 및 검증
 		User assignee = resolveAssignee(projectId, request.assigneeId());
 
-
+		// 4. 정보 수정 (낙관적 락에 의해 동시 수정 시 409 충돌 발생)
 		task.update(request.title(), request.description(), request.status(), assignee);
 		return TaskDto.Response.from(task);
 	}
