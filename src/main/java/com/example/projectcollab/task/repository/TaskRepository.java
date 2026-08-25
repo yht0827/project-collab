@@ -18,13 +18,20 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
 	/**
 	 * 프로젝트 내 작업 목록 검색 (상태 필터 + 키워드 검색 + 페이징)
-	 * 단순 동적 쿼리를 @Query JPQL로 처리하여 별도 의존성 없이 간결하게 구현
+	 * - 데이터 조회: LEFT JOIN FETCH로 N+1 문제 해결
+	 * - countQuery 분리: 불필요한 조인을 제거한 초경량 카운트 쿼리로 대용량 페이징 성능 최적화
 	 */
-	@Query("SELECT t FROM Task t " +
-		"LEFT JOIN FETCH t.assignee " +
-		"WHERE t.project.id = :projectId " +
-		"AND (:status IS NULL OR t.status = :status) " +
-		"AND (:keyword IS NULL OR (t.title LIKE %:keyword% OR t.description LIKE %:keyword%))")
+	@Query(
+		value = "SELECT t FROM Task t " +
+			"LEFT JOIN FETCH t.assignee " +
+			"WHERE t.project.id = :projectId " +
+			"AND (:status IS NULL OR t.status = :status) " +
+			"AND (:keyword IS NULL OR (t.title LIKE %:keyword% OR t.description LIKE %:keyword%))",
+		countQuery = "SELECT COUNT(t) FROM Task t " +
+			"WHERE t.project.id = :projectId " +
+			"AND (:status IS NULL OR t.status = :status) " +
+			"AND (:keyword IS NULL OR (t.title LIKE %:keyword% OR t.description LIKE %:keyword%))"
+	)
 	Page<Task> searchTasks(
 		@Param("projectId") Long projectId,
 		@Param("status") TaskStatus status,

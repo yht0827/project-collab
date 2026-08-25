@@ -1,3 +1,8 @@
+-- =============================================================================
+-- Project Collab 서비스 DDL 스키마 정의서 (H2 / MySQL 표준 호환)
+-- 엔티티의 상수(MAX_LENGTH)와 100% 동기화된 스키마
+-- =============================================================================
+
 DROP TABLE IF EXISTS tasks CASCADE;
 DROP TABLE IF EXISTS project_members CASCADE;
 DROP TABLE IF EXISTS projects CASCADE;
@@ -51,3 +56,4 @@ CREATE TABLE tasks (
 -- 5. 성능 최적화 인덱스
 CREATE INDEX idx_project_members_user ON project_members (user_id);
 CREATE INDEX idx_tasks_project_status ON tasks (project_id, status);
+CREATE INDEX idx_tasks_project_id_desc ON tasks (project_id, id DESC);

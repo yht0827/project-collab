@@ -1,5 +1,6 @@
 package com.example.projectcollab.user.service;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,8 @@ public class UserService {
 		return UserDto.Response.from(savedUser);
 	}
 
-	// 사용자 단건 상세 조회
+	// 사용자 단건 상세 조회 (변경 빈도가 낮고 조회가 빈번하여 1차 로컬 캐시 적용)
+	@Cacheable(value = "users", key = "#userId")
 	public UserDto.Response getUser(Long userId) {
 		// 1. 사용자 엔티티 조회
 		User user = findUserById(userId);
