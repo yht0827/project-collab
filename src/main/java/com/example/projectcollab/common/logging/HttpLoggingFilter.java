@@ -32,9 +32,11 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
 
 		long startTime = System.currentTimeMillis();
 		String method = request.getMethod();
+		String queryString = request.getQueryString();
+		String fullUrl = (queryString != null) ? uri + "?" + queryString : uri;
 		String userId = request.getHeader("X-User-Id");
 
-		log.info("[HTTP REQ] {} {} | userId={}", method, uri, (userId != null ? userId : "anonymous"));
+		log.info("[HTTP REQ] {} {} | userId={}", method, fullUrl, (userId != null ? userId : "anonymous"));
 
 		try {
 			filterChain.doFilter(request, response);
@@ -42,7 +44,8 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
 			long duration = System.currentTimeMillis() - startTime;
 			int status = response.getStatus();
 
-			log.info("[HTTP RES] {} {} | status={} ({}ms) | userId={}", method, uri, status, duration, (userId != null ? userId : "anonymous"));
+			log.info("[HTTP RES] {} {} | status={} ({}ms) | userId={}", method, fullUrl, status, duration,
+				(userId != null ? userId : "anonymous"));
 		}
 	}
 

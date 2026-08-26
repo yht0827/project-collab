@@ -103,6 +103,16 @@ public class ProjectMemberService {
 		return projectMemberRepository.save(ProjectMember.createOwner(project, user));
 	}
 
+	public ProjectMember validateManager(Long projectId, Long userId) {
+		ProjectMember member = findMember(projectId, userId);
+		validateManagerPermission(member);
+		return member;
+	}
+
+	public ProjectMember validateMember(Long projectId, Long userId) {
+		return findMember(projectId, userId);
+	}
+
 	public ProjectMember findMember(Long projectId, Long userId) {
 		return projectMemberRepository.findByProjectIdAndUserId(projectId, userId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.PROJECT_MEMBER_NOT_FOUND));

@@ -1,5 +1,7 @@
 package com.example.projectcollab.user.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +31,12 @@ public class UserController {
 	@PostMapping
 	public ResponseEntity<ApiResponse<UserDto.Response>> createUser(@Valid @RequestBody UserDto.CreateRequest request) {
 		return ApiResponse.toCreated(userService.createUser(request));
+	}
+
+	@Operation(summary = "전체 사용자 목록 조회")
+	@GetMapping
+	public ResponseEntity<ApiResponse<List<UserDto.Response>>> getAllUsers() {
+		return ApiResponse.toOk(userService.getAllUsers());
 	}
 
 	@Operation(summary = "사용자 단건 상세 조회")

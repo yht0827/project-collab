@@ -20,6 +20,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.example.projectcollab.common.exception.BusinessException;
 import com.example.projectcollab.common.exception.ErrorCode;
+import com.example.projectcollab.label.repository.LabelRepository;
 import com.example.projectcollab.project.dto.ProjectDto;
 import com.example.projectcollab.project.entity.Project;
 import com.example.projectcollab.project.entity.ProjectMember;
@@ -50,6 +51,9 @@ class ProjectServiceTest {
 
 	@Mock
 	private UserService userService;
+
+	@Mock
+	private LabelRepository labelRepository;
 
 	@Nested
 	@DisplayName("프로젝트 생성 단위 테스트")
@@ -187,6 +191,7 @@ class ProjectServiceTest {
 			projectService.deleteProject(ownerId, projectId);
 
 			// then
+			verify(labelRepository).deleteAllByProjectId(projectId);
 			verify(taskRepository).deleteAllByProjectId(projectId);
 			verify(projectMemberRepository).deleteAllByProjectId(projectId);
 			verify(projectRepository).delete(project);
