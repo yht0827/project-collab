@@ -1,0 +1,2600 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Collab - 팀 프로젝트 & 작업 관리 협업 플랫폼</title>
+  <!-- React 18 & Babel CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f8fafc;
+      color: #1e293b;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 12px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 50;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      border-radius: 10px;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
+    }
+
+    .brand-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-desc {
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    .header-user-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-switcher {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f1f5f9;
+      padding: 5px 12px;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .user-switcher label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .user-switcher select {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e293b;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .btn-new-user {
+      background: #eef2ff;
+      color: #4f46e5;
+      border: 1px solid #c7d2fe;
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-new-user:hover {
+      background: #e0e7ff;
+    }
+
+    .main-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    aside {
+      width: 260px;
+      background: #ffffff;
+      border-right: 1px solid #e2e8f0;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4px;
+    }
+
+    .sidebar-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-new-project {
+      background: #f1f5f9;
+      color: #4f46e5;
+      border: 1px dashed #cbd5e1;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+      transition: all 0.15s;
+    }
+
+    .btn-new-project:hover {
+      background: #eef2ff;
+      border-color: #a5b4fc;
+    }
+
+    .project-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+    }
+
+    .project-card {
+      background: #ffffff;
+      border: 1px solid transparent;
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s ease;
+    }
+
+    .project-card:hover {
+      background: #f8fafc;
+      border-color: #e2e8f0;
+    }
+
+    .project-card.active {
+      background: #f5f3ff;
+      border-color: #c4b5fd;
+      box-shadow: 0 2px 6px rgba(124, 58, 237, 0.08);
+    }
+
+    .project-card-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .project-card.active .project-card-name {
+      color: #5b21b6;
+    }
+
+    .project-card-desc {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    main {
+      flex: 1;
+      padding: 16px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: #f8fafc;
+      overflow: hidden;
+    }
+
+    .project-banner {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+      flex-shrink: 0;
+    }
+
+    .project-info h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .role-badge {
+      font-size: 11px;
+      font-weight: 700;
+      background: #ede9fe;
+      color: #6d28d9;
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+
+    .project-info p {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .banner-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-secondary {
+      background: #f8fafc;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-secondary:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-danger-outline {
+      background: #ffffff;
+      color: #ef4444;
+      border: 1px solid #fca5a5;
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-danger-outline:hover {
+      background: #fef2f2;
+    }
+
+    .btn-create-task {
+      background: #4f46e5;
+      color: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+      transition: all 0.15s;
+    }
+
+    .btn-create-task:hover {
+      background: #4338ca;
+    }
+
+    .filter-bar {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+      flex-shrink: 0;
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-input {
+      width: 100%;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 6px 32px 6px 12px;
+      font-size: 13px;
+      outline: none;
+      transition: all 0.15s;
+    }
+
+    .search-input:focus {
+      border-color: #6366f1;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .search-clear-btn {
+      position: absolute;
+      right: 8px;
+      background: #cbd5e1;
+      border: none;
+      color: #ffffff;
+      font-size: 10px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .search-clear-btn:hover {
+      background: #94a3b8;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-count-badge {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #64748b;
+      background: #f1f5f9;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .filter-select {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 5px 8px;
+      font-size: 12px;
+      color: #475569;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .kanban-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .kanban-column {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .column-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2px;
+      flex-shrink: 0;
+    }
+
+    .column-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .column-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 12px;
+    }
+
+    .badge-todo { background: #e2e8f0; color: #475569; }
+    .badge-progress { background: #dbeafe; color: #1d4ed8; }
+    .badge-done { background: #d1fae5; color: #047857; }
+
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      flex: 1;
+      padding-right: 4px;
+    }
+
+    .task-list::-webkit-scrollbar {
+      width: 5px;
+    }
+    .task-list::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    .task-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .task-card:hover {
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      transform: translateY(-1px);
+    }
+
+    .task-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .task-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #0f172a;
+      line-height: 1.4;
+      flex: 1;
+      cursor: pointer;
+    }
+
+    .task-title:hover {
+      color: #4f46e5;
+    }
+
+    .card-top-actions {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .btn-edit-task, .btn-delete-task {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 2px 4px;
+      border-radius: 4px;
+      line-height: 1;
+      transition: all 0.1s;
+    }
+
+    .btn-edit-task { color: #64748b; }
+    .btn-edit-task:hover { color: #4f46e5; background: #eef2ff; }
+    .btn-delete-task { color: #94a3b8; }
+    .btn-delete-task:hover { color: #ef4444; background: #fee2e2; }
+
+    .card-labels {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .label-tag {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #ffffff;
+      letter-spacing: 0.2px;
+    }
+
+    .task-desc {
+      font-size: 11.5px;
+      color: #64748b;
+      line-height: 1.4;
+    }
+
+    .card-due-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 6px;
+      width: fit-content;
+    }
+
+    .due-overdue { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+    .due-today { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
+    .due-near { background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
+    .due-normal { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+
+    .task-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 6px;
+      border-top: 1px solid #f1f5f9;
+      margin-top: 2px;
+    }
+
+    .assignee-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .assignee-avatar {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      color: #475569;
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .assignee-name {
+      font-size: 11px;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    .status-actions {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .btn-action {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-action:hover { background: #e2e8f0; }
+    .btn-action.btn-done { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
+    .btn-action.btn-done:hover { background: #d1fae5; }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 0;
+      font-size: 12px;
+      color: #94a3b8;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+    }
+
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 4px 0;
+      flex-shrink: 0;
+    }
+
+    .btn-page {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+    }
+
+    .btn-page:disabled { opacity: 0.4; cursor: not-allowed; }
+    .page-info { font-size: 11px; font-weight: 600; color: #64748b; }
+
+    /* 모달 팝업 */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(3px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      animation: fadeIn 0.15s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 520px;
+      padding: 22px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .modal-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #f1f5f9;
+      flex-shrink: 0;
+    }
+
+    .modal-header {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .btn-modal-close-icon {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 16px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .btn-modal-close-icon:hover { background: #f1f5f9; color: #334155; }
+
+    .labels-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .label-checkbox-tag {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #475569;
+      user-select: none;
+      transition: all 0.15s;
+    }
+
+    .label-checkbox-tag.selected {
+      border-color: transparent;
+      color: #ffffff;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group label {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .form-group input, .form-group textarea, .form-group select {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 12.5px;
+      outline: none;
+    }
+
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: #6366f1;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding-top: 12px;
+      border-top: 1px solid #f1f5f9;
+      flex-shrink: 0;
+    }
+
+    .btn-cancel {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+    }
+
+    .btn-cancel:hover { background: #f8fafc; color: #334155; }
+
+    .btn-submit {
+      background: #4f46e5;
+      color: #ffffff;
+      border: none;
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+    }
+
+    .btn-submit:hover { background: #4338ca; }
+
+    .member-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      margin-top: 6px;
+    }
+
+    .member-table th, .member-table td {
+      padding: 7px 8px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: middle;
+    }
+
+    .member-table th {
+      font-size: 11px;
+      color: #64748b;
+      background: #f8fafc;
+    }
+
+    .role-select {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #6d28d9;
+      cursor: pointer;
+    }
+
+    .btn-remove-member {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 2px 4px;
+    }
+
+    .btn-remove-member:hover { color: #ef4444; }
+
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 200;
+      pointer-events: none;
+    }
+
+    .toast-item {
+      pointer-events: auto;
+      min-width: 320px;
+      max-width: 420px;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 12px 14px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      border: 1px solid #e2e8f0;
+      animation: toastSlideIn 0.25s ease-out;
+    }
+
+    @keyframes toastSlideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .toast-item.error { border-left: 4px solid #ef4444; }
+    .toast-item.success { border-left: 4px solid #10b981; }
+    .toast-item.info { border-left: 4px solid #3b82f6; }
+    .toast-icon { font-size: 16px; flex-shrink: 0; }
+    .toast-content { flex: 1; }
+    .toast-title { font-size: 12.5px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+    .toast-message { font-size: 11.5px; color: #475569; line-height: 1.4; }
+    .toast-close-btn { background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const API_BASE = '/api/v1';
+
+    const COLOR_PRESETS = [
+      '#3b82f6', '#10b981', '#8b5cf6', '#ef4444',
+      '#f59e0b', '#ec4899', '#6366f1', '#64748b'
+    ];
+
+    const UI_TEXT = {
+      APP_TITLE: 'Project Collab',
+      APP_SUBTITLE: '팀 프로젝트 & 작업 관리 협업 플랫폼',
+      USER_SWITCHER_LABEL: '접속자:',
+      BTN_NEW_USER: '+ 새 사용자 등록',
+      MY_PROJECTS_TITLE: '내 프로젝트',
+      BTN_NEW_PROJECT: '+ 새 프로젝트 생성',
+      NO_PROJECTS: '참여 중인 프로젝트가 없습니다.',
+      NO_DESCRIPTION: '설명 없음',
+      ROLE_PREFIX: '내 권한:',
+      BTN_NEW_TASK: '+ 새 작업 추가',
+      BTN_MANAGE_MEMBERS: (count) => `👥 멤버 관리 (${count})`,
+      BTN_MANAGE_LABELS: (count) => `🏷️ 라벨 관리 (${count})`,
+      BTN_DELETE_PROJECT: '프로젝트 삭제',
+      SEARCH_PLACEHOLDER: '작업 제목 또는 상세 설명 검색...',
+      TOTAL_COUNT_PREFIX: '총',
+      TOTAL_COUNT_SUFFIX: '건',
+      LABEL_ALL: '전체 라벨',
+      STATUS_ALL: '전체 상태',
+      STATUS_TODO: '할 일 (TODO)',
+      STATUS_IN_PROGRESS: '진행 중 (IN_PROGRESS)',
+      STATUS_DONE: '완료 (DONE)',
+      NO_TASKS: '작업 없음',
+      UNASSIGNED: '미배정',
+      TOOLTIP_TASK_DETAIL: '클릭하여 상세/수정',
+      TOOLTIP_EDIT_TASK: '작업 상세 및 수정',
+      TOOLTIP_DELETE_TASK: '작업 삭제',
+      TOOLTIP_MOVE_TODO: 'TODO로 이동',
+      TOOLTIP_MOVE_PROGRESS: '진행중으로 이동',
+      TOOLTIP_MOVE_DONE: '완료로 이동',
+      TOOLTIP_CLEAR_SEARCH: '검색어 지우기',
+      TOOLTIP_CLOSE: '닫기',
+      TOOLTIP_DELETE_LABEL: '라벨 삭제',
+      DUE_DONE: (date) => `완료 (${date})`,
+      DUE_OVERDUE: (days) => `🚨 기한 초과 (${days}일 지남)`,
+      DUE_TODAY: '⚡ D-Day (오늘 마감)',
+      DUE_NEAR: (days, date) => `⏰ D-${days} (${date})`,
+      DUE_NORMAL: (date) => `📅 ${date}`,
+      PER_PAGE_10: '10개씩',
+      PER_PAGE_20: '20개씩',
+      PER_PAGE_50: '50개씩',
+      PAGE_PREV: '◀ 이전',
+      PAGE_NEXT: '다음 ▶',
+      PAGE_INFO: (current, total) => `${current} / ${total} 페이지`,
+      MEMBERS_LIST_TITLE: (count) => `참여 멤버 목록 (${count}명)`,
+      TH_USER: '사용자',
+      TH_ROLE_CHANGE: '역할 변경',
+      TH_JOINED_AT: '참여일',
+      TH_MANAGE: '관리',
+      TOOLTIP_REMOVE_MEMBER: '멤버 제외',
+      OPTION_SELECT_USER: '사용자 선택',
+      MODAL_LABELS_TITLE: '프로젝트 라벨 관리',
+      LABEL_NAME: '라벨 이름 *',
+      PLACEHOLDER_LABEL_NAME: '예: 디자인, 신메뉴, 긴급',
+      LABEL_COLOR: '라벨 색상',
+      BTN_ADD_LABEL: '+ 라벨 추가',
+      LABELS_LIST_TITLE: (count) => `등록된 라벨 목록 (${count}개)`,
+      NO_LABELS: '등록된 라벨이 없습니다. 위에서 새 라벨을 추가해보세요!',
+      MODAL_NEW_TASK_TITLE: '신규 작업 등록',
+      MODAL_EDIT_TASK_TITLE: '📌 작업 상세 및 수정',
+      MODAL_NEW_PROJECT_TITLE: '신규 프로젝트 생성',
+      MODAL_MEMBERS_TITLE: '프로젝트 멤버 관리 & 초대',
+      MODAL_NEW_USER_TITLE: '신규 사용자 등록',
+      LABEL_TITLE: '제목 *',
+      PLACEHOLDER_TASK_TITLE: '작업 제목을 입력하세요',
+      LABEL_USER_NAME: '사용자 이름 *',
+      PLACEHOLDER_USER_NAME: '예: 손흥민, 박지성',
+      LABEL_PROJECT_NAME: '프로젝트명 *',
+      PLACEHOLDER_PROJECT_NAME: '프로젝트 이름을 입력하세요',
+      LABEL_DESCRIPTION: '상세 설명',
+      PLACEHOLDER_TASK_DESC: '작업 상세 내용',
+      PLACEHOLDER_TASK_EDIT_DESC: '작업에 대한 상세 설명...',
+      PLACEHOLDER_PROJECT_DESC: '프로젝트에 대한 설명을 입력하세요',
+      LABEL_ASSIGNEE: '담당자 지정',
+      LABEL_STATUS: '상태 *',
+      LABEL_DUE_DATE: '마감일 (Due Date)',
+      LABEL_TAGS: '라벨 (Labels)',
+      LABEL_USER_SELECT: '사용자 선택 *',
+      LABEL_ROLE_SELECT: '역할 부여 *',
+      OPTION_UNASSIGNED: '미지정',
+      BTN_CANCEL: '취소',
+      BTN_CLOSE: '닫기',
+      BTN_SUBMIT: '생성하기',
+      BTN_SAVE: '저장하기',
+      BTN_INVITE: '초대하기',
+      TITLE_SUCCESS_USER_CREATE: '사용자 등록 완료',
+      TITLE_SUCCESS_PROJECT_CREATE: '프로젝트 생성',
+      TITLE_SUCCESS_MEMBER_INVITE: '멤버 초대 성공',
+      TITLE_SUCCESS_LABEL_CREATE: '라벨 추가 완료',
+      TITLE_ERROR_USER_CREATE: '사용자 등록 실패',
+      TITLE_ERROR_PROJECT_CREATE: '생성 실패',
+      TITLE_ERROR_TASK_CREATE: '작업 생성 실패',
+      TITLE_ERROR_TASK_UPDATE: '작업 수정 실패',
+      TITLE_ERROR_MEMBER_INVITE: '초대 실패',
+      TITLE_ERROR_MEMBER_ROLE: '역할 변경 실패',
+      TITLE_ERROR_MEMBER_REMOVE: '멤버 제외 실패',
+      TITLE_ERROR_LABEL_CREATE: '라벨 생성 실패',
+      TITLE_ERROR_LABEL_DELETE: '라벨 삭제 실패',
+      ERR_NETWORK: '네트워크 오류가 발생했습니다.',
+      ERR_USER_CREATE_FAIL: '사용자 등록에 실패했습니다.',
+      ERR_TASK_CREATE_FAIL: '작업 생성에 실패했습니다.',
+      ERR_TASK_UPDATE_FAIL: '작업 수정 실패: 권한이 없거나 동시 수정 충돌이 발생했습니다.',
+      ERR_TASK_DELETE_FAIL: '작업 삭제 실패: 담당자 본인 또는 관리자만 삭제할 수 있습니다.',
+      ERR_PROJECT_DELETE_FAIL: '프로젝트 삭제 실패: OWNER만 삭제할 수 있습니다.',
+      ERR_MEMBER_ROLE_FAIL: '역할 변경 실패: 마지막 OWNER는 역할을 변경할 수 없습니다.',
+      ERR_MEMBER_REMOVE_FAIL: '멤버 제외 실패: 마지막 OWNER는 프로젝트에서 탈퇴할 수 없습니다.',
+      ERR_LABEL_CREATE_FAIL: '라벨 생성 실패: 이름이 중복되었거나 권한이 없습니다.',
+      ERR_LABEL_DELETE_FAIL: '라벨 삭제 실패: OWNER 또는 ADMIN 권한이 필요합니다.',
+      SUCCESS_USER_CREATE: (name) => `'${name}' 사용자가 등록되었습니다.`,
+      SUCCESS_PROJECT_CREATE: (name) => `'${name}' 프로젝트가 생성되었습니다.`,
+      SUCCESS_TASK_CREATE: '새 작업이 추가되었습니다.',
+      SUCCESS_TASK_UPDATE: '작업이 성공적으로 수정되었습니다.',
+      SUCCESS_TASK_STATUS_CHANGE: (status) => `작업 상태가 '${status}'(으)로 변경되었습니다.`,
+      SUCCESS_TASK_DELETE: '작업이 삭제되었습니다.',
+      SUCCESS_PROJECT_DELETE: '프로젝트가 삭제되었습니다.',
+      SUCCESS_MEMBER_INVITE: '멤버가 프로젝트에 초대되었습니다.',
+      SUCCESS_MEMBER_ROLE: '멤버 역할이 변경되었습니다.',
+      SUCCESS_MEMBER_REMOVE: '멤버가 프로젝트에서 제외되었습니다.',
+      SUCCESS_LABEL_CREATE: '새 라벨이 추가되었습니다.',
+      SUCCESS_LABEL_DELETE: '라벨이 삭제되었습니다.',
+      CONFIRM_TASK_DELETE: '정말로 이 작업을 삭제하시겠습니까?',
+      CONFIRM_PROJECT_DELETE: '정말로 이 프로젝트를 삭제하시겠습니까? (하위 작업 모두 삭제)',
+      CONFIRM_MEMBER_REMOVE: '정말로 이 멤버를 프로젝트에서 제외하시겠습니까?',
+      CONFIRM_LABEL_DELETE: '정말로 이 라벨을 삭제하시겠습니까?'
+    };
+
+    function getDueInfo(dueDateStr, isDone) {
+      if (!dueDateStr) return null;
+      if (isDone) {
+        return { text: UI_TEXT.DUE_DONE(dueDateStr), className: 'due-normal' };
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const due = new Date(dueDateStr);
+      due.setHours(0, 0, 0, 0);
+
+      const diffTime = due - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays < 0) {
+        return { text: UI_TEXT.DUE_OVERDUE(Math.abs(diffDays)), className: 'due-overdue' };
+      } else if (diffDays === 0) {
+        return { text: UI_TEXT.DUE_TODAY, className: 'due-today' };
+      } else if (diffDays <= 3) {
+        return { text: UI_TEXT.DUE_NEAR(diffDays, dueDateStr), className: 'due-near' };
+      } else {
+        return { text: UI_TEXT.DUE_NORMAL(dueDateStr), className: 'due-normal' };
+      }
+    }
+
+    function App() {
+      const [users, setUsers] = useState([]);
+      const [currentUserId, setCurrentUserId] = useState(1);
+
+      const [projects, setProjects] = useState([]);
+      const [selectedProject, setSelectedProject] = useState(null);
+      const [projectDetail, setProjectDetail] = useState(null);
+      const [tasks, setTasks] = useState([]);
+      const [members, setMembers] = useState([]);
+      const [projectLabels, setProjectLabels] = useState([]);
+      
+      const [currentPage, setCurrentPage] = useState(0);
+      const [pageSize, setPageSize] = useState(20);
+      const [totalPages, setTotalPages] = useState(1);
+      const [totalElements, setTotalElements] = useState(0);
+
+      const [keywordInput, setKeywordInput] = useState('');
+      const [debouncedKeyword, setDebouncedKeyword] = useState('');
+      const [statusFilter, setStatusFilter] = useState('');
+      const [labelFilter, setLabelFilter] = useState('');
+
+      const [toasts, setToasts] = useState([]);
+
+      const showToast = (message, type = 'info', title = '') => {
+        const id = Date.now() + Math.random();
+        setToasts(prev => [...prev, { id, message, type, title }]);
+        setTimeout(() => {
+          setToasts(prev => prev.filter(t => t.id !== id));
+        }, 3500);
+      };
+
+      const removeToast = (id) => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+      };
+
+      const [showNewTaskModal, setShowNewTaskModal] = useState(false);
+      const [showEditTaskModal, setShowEditTaskModal] = useState(false);
+      const [editingTask, setEditingTask] = useState(null);
+      const [showNewProjectModal, setShowNewProjectModal] = useState(false);
+      const [showEditProjectModal, setShowEditProjectModal] = useState(false);
+      const [showMembersModal, setShowMembersModal] = useState(false);
+      const [showLabelsModal, setShowLabelsModal] = useState(false);
+      const [showNewUserModal, setShowNewUserModal] = useState(false);
+
+      // 작업 폼 상태
+      const [newTaskTitle, setNewTaskTitle] = useState('');
+      const [newTaskDesc, setNewTaskDesc] = useState('');
+      const [newTaskAssignee, setNewTaskAssignee] = useState('');
+      const [newTaskDueDate, setNewTaskDueDate] = useState('');
+      const [newTaskLabelIds, setNewTaskLabelIds] = useState([]);
+
+      const [editTaskTitle, setEditTaskTitle] = useState('');
+      const [editTaskDesc, setEditTaskDesc] = useState('');
+      const [editTaskAssignee, setEditTaskAssignee] = useState('');
+      const [editTaskStatus, setEditTaskStatus] = useState('TODO');
+      const [editTaskDueDate, setEditTaskDueDate] = useState('');
+      const [editTaskLabelIds, setEditTaskLabelIds] = useState([]);
+
+      const [newUserName, setNewUserName] = useState('');
+      const [newProjectName, setNewProjectName] = useState('');
+      const [newProjectDesc, setNewProjectDesc] = useState('');
+      const [editProjectName, setEditProjectName] = useState('');
+      const [editProjectDesc, setEditProjectDesc] = useState('');
+      const [inviteUserId, setInviteUserId] = useState('');
+      const [inviteRole, setInviteRole] = useState('MEMBER');
+
+      const [newLabelName, setNewLabelName] = useState('');
+      const [newLabelColor, setNewLabelColor] = useState(COLOR_PRESETS[0]);
+
+      useEffect(() => {
+        const timer = setTimeout(() => {
+          setDebouncedKeyword(keywordInput);
+          setCurrentPage(0);
+        }, 300);
+        return () => clearTimeout(timer);
+      }, [keywordInput]);
+
+      useEffect(() => {
+        setCurrentPage(0);
+      }, [debouncedKeyword, labelFilter, statusFilter]);
+
+      useEffect(() => {
+        fetchUsers();
+      }, []);
+
+      const fetchUsers = async () => {
+        try {
+          const res = await fetch(`${API_BASE}/users`);
+          const json = await res.json();
+          if (json.success && json.data.length > 0) {
+            setUsers(json.data);
+            if (!currentUserId) setCurrentUserId(json.data[0].id);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      };
+
+      useEffect(() => {
+        if (currentUserId) fetchProjects();
+      }, [currentUserId]);
+
+      useEffect(() => {
+        if (selectedProject && currentUserId) {
+          fetchProjectDetail(selectedProject.id);
+          fetchTasks(selectedProject.id);
+          fetchMembers(selectedProject.id);
+          fetchLabels(selectedProject.id);
+        }
+      }, [selectedProject, currentUserId, statusFilter, labelFilter, debouncedKeyword, currentPage, pageSize]);
+
+      const fetchProjects = async () => {
+        try {
+          const res = await fetch(`${API_BASE}/projects`, {
+            headers: { 'X-User-Id': currentUserId }
+          });
+          const json = await res.json();
+          if (json.success && json.data.length > 0) {
+            setProjects(json.data);
+            const stillExists = json.data.find(p => p.id === selectedProject?.id);
+            setSelectedProject(stillExists || json.data[0]);
+          } else {
+            setProjects([]);
+            setSelectedProject(null);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      };
+
+      const fetchProjectDetail = async (projectId) => {
+        try {
+          const res = await fetch(`${API_BASE}/projects/${projectId}`, {
+            headers: { 'X-User-Id': currentUserId }
+          });
+          const json = await res.json();
+          if (json.success) setProjectDetail(json.data);
+        } catch (e) {
+          console.error(e);
+        }
+      };
+
+      const fetchTasks = async (projectId) => {
+        try {
+          let url = `${API_BASE}/projects/${projectId}/tasks?page=${currentPage}&size=${pageSize}`;
+          if (statusFilter) url += `&status=${statusFilter}`;
+          if (labelFilter) url += `&labelId=${labelFilter}`;
+          if (debouncedKeyword) url += `&keyword=${encodeURIComponent(debouncedKeyword)}`;
+
+          const res = await fetch(url, {
+            headers: { 'X-User-Id': currentUserId }
+          });
+          const json = await res.json();
+          if (json.success) {
+            setTasks(json.data.content || []);
+            setTotalPages(json.data.totalPages || 1);
+            setTotalElements(json.data.totalElements || 0);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      };
+
+      const fetchMembers = async (projectId) => {
+        try {
+          const res = await fetch(`${API_BASE}/projects/${projectId}/members`, {
+            headers: { 'X-User-Id': currentUserId }
+          });
+          const json = await res.json();
+          if (json.success) setMembers(json.data);
+        } catch (e) {
+          console.error(e);
+        }
+      };
+
+      const fetchLabels = async (projectId) => {
+        try {
+          const res = await fetch(`${API_BASE}/projects/${projectId}/labels`, {
+            headers: { 'X-User-Id': currentUserId }
+          });
+          const json = await res.json();
+          if (json.success) setProjectLabels(json.data);
+        } catch (e) {
+          console.error(e);
+        }
+      };
+
+      const handleCreateUser = async (e) => {
+        e.preventDefault();
+        if (!newUserName.trim()) return;
+
+        try {
+          const res = await fetch(`${API_BASE}/users`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: newUserName })
+          });
+          const json = await res.json();
+          if (json.success) {
+            setNewUserName('');
+            setShowNewUserModal(false);
+            showToast(UI_TEXT.SUCCESS_USER_CREATE(json.data.name), 'success', UI_TEXT.TITLE_SUCCESS_USER_CREATE);
+            const usersRes = await fetch(`${API_BASE}/users`);
+            const usersJson = await usersRes.json();
+            if (usersJson.success) {
+              setUsers(usersJson.data);
+              setCurrentUserId(json.data.id);
+            }
+          } else {
+            showToast(json.message || UI_TEXT.ERR_USER_CREATE_FAIL, 'error', UI_TEXT.TITLE_ERROR_USER_CREATE);
+          }
+        } catch (e) {
+          showToast(UI_TEXT.ERR_NETWORK, 'error');
+        }
+      };
+
+      const handleCreateProject = async (e) => {
+        e.preventDefault();
+        if (!newProjectName.trim()) return;
+
+        try {
+          const res = await fetch(`${API_BASE}/projects`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-User-Id': currentUserId
+            },
+            body: JSON.stringify({
+              name: newProjectName,
+              description: newProjectDesc
+            })
+          });
+          const json = await res.json();
+          if (json.success) {
+            setNewProjectName('');
+            setNewProjectDesc('');
+            setShowNewProjectModal(false);
+            showToast(UI_TEXT.SUCCESS_PROJECT_CREATE(json.data.name), 'success', UI_TEXT.TITLE_SUCCESS_PROJECT_CREATE);
+            fetchProjects();
+          } else {
+            showToast(json.message || UI_TEXT.ERR_PROJECT_DELETE_FAIL, 'error', UI_TEXT.TITLE_ERROR_PROJECT_CREATE);
+          }
+        } catch (e) {
+          showToast(UI_TEXT.ERR_NETWORK, 'error');
+        }
+      };
+
+      const handleOpenEditProject = (e) => {
+        if (e) e.stopPropagation();
+        if (!selectedProject) return;
+        setEditProjectName(selectedProject.name || '');
+        setEditProjectDesc(selectedProject.description || '');
+        setShowEditProjectModal(true);
+      };
+
+      const handleUpdateProject = async (e) => {
+        e.preventDefault();
+        if (!editProjectName.trim()) return;
+
+        try {
+          const res = await fetch(`${API_BASE}/projects/${selectedProject.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-User-Id': currentUserId
+            },
+            body: JSON.stringify({
+              name: editProjectName.trim(),
+              description: editProjectDesc.trim()
+            })
+          });
+          const json = await res.json();
+          if (json.success) {
+            setShowEditProjectModal(false);
+            setSelectedProject(json.data);
+            showToast(UI_TEXT.SUCCESS_PROJECT_UPDATE, 'success', UI_TEXT.TITLE_SUCCESS_PROJECT_UPDATE);
+            fetchProjects();
+            fetchProjectDetail(json.data.id);
+          } else {
+            showToast(json.message || UI_TEXT.ERR_PROJECT_UPDATE_FAIL, 'error', UI_TEXT.TITLE_ERROR_PROJECT_UPDATE);
+          }
+        } catch (e) {
+          showToast(UI_TEXT.ERR_NETWORK, 'error');
+        }
+      };
+
+      const handleDeleteProject = async () => {
+        if (!confirm(UI_TEXT.CONFIRM_PROJECT_DELETE)) return;
+
+        try {
+          const res = await fetch(`${API_BASE}/projects/${selectedProject.id}`, {
+            method: 'DELETE',
+            headers: { 'X-User-Id': currentUserId }
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast(UI_TEXT.SUCCESS_PROJECT_DELETE, 'success');
+            fetchProjects();
+          } else {
+            showToast(json.message || UI_TEXT.ERR_PROJECT_DELETE_FAIL, 'error');
+          }
+        } catch (e) {
+          showToast(UI_TEXT.ERR_NETWORK, 'error');
+        }
+      };
+
+      const handleInviteMember = async (e) => {
+        e.preventDefault();
+        if (!inviteUserId) return;
+
+        try {
+          const res = await fetch(`${API_BASE}/projects/${selectedProject.id}/members`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-User-Id': currentUserId
+            },
+            body: JSON.stringify({
+              userId: Number(inviteUserId),
+              role: inviteRole
+            })
+          });
+          const json = await res.json();
+          if (json.success) {
+            setInviteUserId('');
+            showToast(UI_TEXT.SUCCESS_MEMBER_INVITE, 'success', UI_TEXT.TITLE_SUCCESS_MEMBER_INVITE);
+            fetchMembers(selectedProject.id);
+          } else {
+            showToast(json.message || UI_TEXT.TITLE_ERROR_MEMBER_INVITE, 'error', UI_TEXT.TITLE_ERROR_MEMBER_INVITE);
+          }
+        } catch (e) {
+          showToast(UI_TEXT.ERR_NETWORK, 'error');
+        }
+      };
+
+      const handleUpdateMemberRole = async (userId, newRole) => {
+        try {
+          const res = await fetch(`${API_BASE}/projects/${selectedProject.id}/members/${userId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-User-Id': currentUserId
+            },
+            body: JSON.stringify({ role: newRole })
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast(UI_TEXT.SUCCESS_MEMBER_ROLE, 'success');
+            fetchMembers(selectedProject.id);
+            fetchProjectDetail(selectedProject.id);
+          } else {
+            showToast(json.message || UI_TEXT.ERR_MEMBER_ROLE_FAIL, 'error', UI_TEXT.TITLE_ERROR_MEMBER_ROLE);
+          }
+        } catch (e) {
+          showToast(UI_TEXT.ERR_NETWORK, 'error');
+        }
+      };
+
+      const handleRemoveMember = async (userId) => {
+        if (!confirm(UI_TEXT.CONFIRM_MEMBER_REMOVE)) return;
+
+        try {
+          const res = await fetch(`${API_BASE}/projects/${selectedProject.id}/members/${userId}`, {
+            method: 'DELETE',
+            headers: { 'X-User-Id': currentUserId }
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast(UI_TEXT.SUCCESS_MEMBER_REMOVE, 'success');
+            fetchMembers(selectedProject.id);
+            fetchProjectDetail(selectedProject.id);
+            fetchProjects();
+          } else {
+            showToast(json.message || UI_TEXT.ERR_MEMBER_REMOVE_FAIL, 'error', UI_TEXT.TITLE_ERROR_MEMBER_REMOVE);
+          }
+        } catch (e) {
+          showToast(UI_TEXT.ERR_NETWORK, 'error');
+        }
+      };
+
+      const handleCreateLabel = async (e) => {
+        e.preventDefault();
+        if (!newLabelName.trim()) return;
+
+        try {
+          const res = await fetch(`${API_BASE}/projects/${selectedProject.id}/labels`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-User-Id': currentUserId
+            },
+            body: JSON.stringify({
+              name: newLabelName.trim(),
+              color: newLabelColor
+            })
+          });
+          const json = await res.json();
+          if (json.success) {
+            setNewLabelName('');
+            showToast(UI_TEXT.SUCCESS_LABEL_CREATE, 'success', UI_TEXT.TITLE_SUCCESS_LABEL_CREATE);
+            fetchLabels(selectedProject.id);
+          } else {
+            showToast(json.message || UI_TEXT.ERR_LABEL_CREATE_FAIL, 'error', UI_TEXT.TITLE_ERROR_LABEL_CREATE);
+          }
+        } catch (e) {
+          showToast(UI_TEXT.ERR_NETWORK, 'error');
+        }
+      };
+
+      const handleDeleteLabel = async (labelId) => {
+        if (!confirm(UI_TEXT.CONFIRM_LABEL_DELETE)) return;
+
+        try {
+          const res = await fetch(`${API_BASE}/projects/${selectedProject.id}/labels/${labelId}`, {
+            method: 'DELETE',
+            headers: { 'X-User-Id': currentUserId }
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast(UI_TEXT.SUCCESS_LABEL_DELETE, 'success');
+            fetchLabels(selectedProject.id);
+            fetchTasks(selectedProject.id);
+          } else {
+            showToast(json.message || UI_TEXT.ERR_LABEL_DELETE_FAIL, 'error', UI_TEXT.TITLE_ERROR_LABEL_DELETE);
+          }
+        } catch (e) {
+          showToast(UI_TEXT.ERR_NETWORK, 'error');
+        }
+      };
+
+      const handleCreateTask = async (e) => {
+        e.preventDefault();
+        if (!newTaskTitle.trim()) return;
+
+        try {
+          const res = await fetch(`${API_BASE}/projects/${selectedProject.id}/tasks`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-User-Id': currentUserId
+            },
+            body: JSON.stringify({
+              title: newTaskTitle,
+              description: newTaskDesc,
+              assigneeId: newTaskAssignee ? Number(newTaskAssignee) : null,
+              dueDate: newTaskDueDate || null,
+              labelIds: newTaskLabelIds
+            })
+          });
+          const json = await res.json();
+          if (json.success) {
+            setNewTaskTitle('');
+            setNewTaskDesc('');
+            setNewTaskAssignee('');
+            setNewTaskDueDate('');
+            setNewTaskLabelIds([]);
+            setShowNewTaskModal(false);
+            showToast(UI_TEXT.SUCCESS_TASK_CREATE, 'success');
+            fetchTasks(selectedProject.id);
+          } else {
+            showToast(json.message || UI_TEXT.ERR_TASK_CREATE_FAIL, 'error', UI_TEXT.TITLE_ERROR_TASK_CREATE);
+          }
+        } catch (e) {
+          showToast(UI_TEXT.ERR_NETWORK, 'error');
+        }
+      };
+
+      const handleOpenEditModal = (task) => {
+        setEditingTask(task);
+        setEditTaskTitle(task.title || '');
+        setEditTaskDesc(task.description || '');
+        setEditTaskAssignee(task.assigneeId ? task.assigneeId : '');
+        setEditTaskStatus(task.status || 'TODO');
+        setEditTaskDueDate(task.dueDate || '');
+        setEditTaskLabelIds(task.labels ? task.labels.map(l => l.id) : []);
+        setShowEditTaskModal(true);
+      };
+
+      const handleSaveTaskEdit = async (e) => {
+        e.preventDefault();
+        if (!editTaskTitle.trim()) return;
+
+        try {
+          const res = await fetch(`${API_BASE}/projects/${selectedProject.id}/tasks/${editingTask.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-User-Id': currentUserId
+            },
+            body: JSON.stringify({
+              title: editTaskTitle,
+              description: editTaskDesc,
+              assigneeId: editTaskAssignee ? Number(editTaskAssignee) : null,
+              status: editTaskStatus,
+              dueDate: editTaskDueDate || null,
+              labelIds: editTaskLabelIds
+            })
+          });
+          const json = await res.json();
+          if (json.success) {
+            setShowEditTaskModal(false);
+            setEditingTask(null);
+            showToast(UI_TEXT.SUCCESS_TASK_UPDATE, 'success');
+            fetchTasks(selectedProject.id);
+          } else {
+            showToast(json.message || UI_TEXT.ERR_TASK_UPDATE_FAIL, 'error', UI_TEXT.TITLE_ERROR_TASK_UPDATE);
+          }
+        } catch (e) {
+          showToast(UI_TEXT.ERR_NETWORK, 'error');
+        }
+      };
+
+      const handleUpdateTaskStatus = async (task, newStatus) => {
+        try {
+          const res = await fetch(`${API_BASE}/projects/${selectedProject.id}/tasks/${task.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-User-Id': currentUserId
+            },
+            body: JSON.stringify({
+              title: task.title,
+              description: task.description,
+              assigneeId: task.assigneeId ? task.assigneeId : null,
+              status: newStatus,
+              dueDate: task.dueDate || null,
+              labelIds: task.labels ? task.labels.map(l => l.id) : []
+            })
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast(UI_TEXT.SUCCESS_TASK_STATUS_CHANGE(newStatus), 'success');
+            fetchTasks(selectedProject.id);
+          } else {
+            showToast(json.message || UI_TEXT.ERR_TASK_UPDATE_FAIL, 'error', UI_TEXT.TITLE_ERROR_TASK_UPDATE);
+          }
+        } catch (e) {
+          showToast(UI_TEXT.ERR_NETWORK, 'error');
+        }
+      };
+
+      const handleDeleteTask = async (taskId) => {
+        if (!confirm(UI_TEXT.CONFIRM_TASK_DELETE)) return;
+
+        try {
+          const res = await fetch(`${API_BASE}/projects/${selectedProject.id}/tasks/${taskId}`, {
+            method: 'DELETE',
+            headers: { 'X-User-Id': currentUserId }
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast(UI_TEXT.SUCCESS_TASK_DELETE, 'success');
+            fetchTasks(selectedProject.id);
+          } else {
+            showToast(json.message || UI_TEXT.ERR_TASK_DELETE_FAIL, 'error');
+          }
+        } catch (e) {
+          showToast(UI_TEXT.ERR_NETWORK, 'error');
+        }
+      };
+
+      const toggleLabelSelection = (labelId, isNewTask = false) => {
+        if (isNewTask) {
+          setNewTaskLabelIds(prev =>
+            prev.includes(labelId) ? prev.filter(id => id !== labelId) : [...prev, labelId]
+          );
+        } else {
+          setEditTaskLabelIds(prev =>
+            prev.includes(labelId) ? prev.filter(id => id !== labelId) : [...prev, labelId]
+          );
+        }
+      };
+
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+          <header>
+            <div className="brand">
+              <div className="brand-logo">P</div>
+              <div>
+                <div className="brand-title">{UI_TEXT.APP_TITLE}</div>
+                <div className="brand-desc">{UI_TEXT.APP_SUBTITLE}</div>
+              </div>
+            </div>
+
+            <div className="header-user-area">
+              <div className="user-switcher">
+                <label>{UI_TEXT.USER_SWITCHER_LABEL}</label>
+                <select
+                  value={currentUserId}
+                  onChange={(e) => setCurrentUserId(Number(e.target.value))}
+                >
+                  {users.map(u => (
+                    <option key={u.id} value={u.id}>{u.name} (ID: {u.id})</option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                className="btn-new-user"
+                onClick={() => setShowNewUserModal(true)}
+              >
+                {UI_TEXT.BTN_NEW_USER}
+              </button>
+            </div>
+          </header>
+
+          <div className="main-container">
+            <aside>
+              <div className="sidebar-header">
+                <span className="sidebar-title">{UI_TEXT.MY_PROJECTS_TITLE}</span>
+                <span className="project-count">{projects.length}</span>
+              </div>
+
+              <button
+                onClick={() => setShowNewProjectModal(true)}
+                className="btn-new-project"
+              >
+                {UI_TEXT.BTN_NEW_PROJECT}
+              </button>
+
+              <div className="project-list">
+                {projects.map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => setSelectedProject(p)}
+                    className={`project-card ${selectedProject?.id === p.id ? 'active' : ''}`}
+                  >
+                    <div className="project-card-name">{p.name}</div>
+                    <div className="project-card-desc">{p.description || UI_TEXT.NO_DESCRIPTION}</div>
+                  </button>
+                ))}
+              </div>
+            </aside>
+
+            <main>
+              {selectedProject ? (
+                <>
+                  <div className="project-banner">
+                    <div className="project-info">
+                      <h2>
+                        {selectedProject.name}
+                        {(projectDetail?.myRole === 'OWNER' || projectDetail?.myRole === 'ADMIN') && (
+                          <button
+                            type="button"
+                            className="btn-edit-task"
+                            onClick={(e) => handleOpenEditProject(e)}
+                            title={UI_TEXT.TOOLTIP_EDIT_PROJECT}
+                            style={{ fontSize: '14px', marginLeft: '2px' }}
+                          >
+                            ✏️
+                          </button>
+                        )}
+                        {projectDetail && (
+                          <span className="role-badge">{UI_TEXT.ROLE_PREFIX} {projectDetail.myRole}</span>
+                        )}
+                      </h2>
+                      <p>{selectedProject.description}</p>
+                    </div>
+
+                    <div className="banner-actions">
+                      <button
+                        className="btn-secondary"
+                        onClick={() => setShowMembersModal(true)}
+                      >
+                        {UI_TEXT.BTN_MANAGE_MEMBERS(members.length)}
+                      </button>
+
+                      <button
+                        className="btn-secondary"
+                        onClick={() => setShowLabelsModal(true)}
+                      >
+                        {UI_TEXT.BTN_MANAGE_LABELS(projectLabels.length)}
+                      </button>
+
+                      {projectDetail?.myRole === 'OWNER' && (
+                        <button
+                          className="btn-danger-outline"
+                          onClick={handleDeleteProject}
+                        >
+                          {UI_TEXT.BTN_DELETE_PROJECT}
+                        </button>
+                      )}
+
+                      <button
+                        className="btn-create-task"
+                        onClick={() => setShowNewTaskModal(true)}
+                      >
+                        {UI_TEXT.BTN_NEW_TASK}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="filter-bar">
+                    <div className="search-box">
+                      <input
+                        type="text"
+                        className="search-input"
+                        placeholder={UI_TEXT.SEARCH_PLACEHOLDER}
+                        value={keywordInput}
+                        onChange={(e) => setKeywordInput(e.target.value)}
+                      />
+                      {keywordInput && (
+                        <button
+                          className="search-clear-btn"
+                          onClick={() => setKeywordInput('')}
+                          title={UI_TEXT.TOOLTIP_CLEAR_SEARCH}
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="filter-group">
+                      <span className="search-count-badge">
+                        {UI_TEXT.TOTAL_COUNT_PREFIX} {totalElements}{UI_TEXT.TOTAL_COUNT_SUFFIX}
+                      </span>
+
+                      {/* 라벨 필터 */}
+                      <select
+                        className="filter-select"
+                        value={labelFilter}
+                        onChange={(e) => {
+                          setLabelFilter(e.target.value);
+                          setCurrentPage(0);
+                        }}
+                      >
+                        <option value="">{UI_TEXT.LABEL_ALL}</option>
+                        {projectLabels.map(l => (
+                          <option key={l.id} value={l.id}>{l.name}</option>
+                        ))}
+                      </select>
+
+                      {/* 상태 필터 */}
+                      <select
+                        className="filter-select"
+                        value={statusFilter}
+                        onChange={(e) => {
+                          setStatusFilter(e.target.value);
+                          setCurrentPage(0);
+                        }}
+                      >
+                        <option value="">{UI_TEXT.STATUS_ALL}</option>
+                        <option value="TODO">{UI_TEXT.STATUS_TODO}</option>
+                        <option value="IN_PROGRESS">{UI_TEXT.STATUS_IN_PROGRESS}</option>
+                        <option value="DONE">{UI_TEXT.STATUS_DONE}</option>
+                      </select>
+
+                      {/* 페이지 크기 */}
+                      <select
+                        className="filter-select"
+                        value={pageSize}
+                        onChange={(e) => {
+                          setPageSize(Number(e.target.value));
+                          setCurrentPage(0);
+                        }}
+                      >
+                        <option value={10}>{UI_TEXT.PER_PAGE_10}</option>
+                        <option value={20}>{UI_TEXT.PER_PAGE_20}</option>
+                        <option value={50}>{UI_TEXT.PER_PAGE_50}</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* 🌟 3열 칸반 그리드 */}
+                  <div className="kanban-grid">
+                    <KanbanColumn
+                      title={UI_TEXT.STATUS_TODO}
+                      badgeClass="badge-todo"
+                      tasks={tasks.filter(t => t.status === 'TODO')}
+                      onStatusChange={handleUpdateTaskStatus}
+                      onEditTask={handleOpenEditModal}
+                      onDeleteTask={handleDeleteTask}
+                    />
+
+                    <KanbanColumn
+                      title={UI_TEXT.STATUS_IN_PROGRESS}
+                      badgeClass="badge-progress"
+                      tasks={tasks.filter(t => t.status === 'IN_PROGRESS')}
+                      onStatusChange={handleUpdateTaskStatus}
+                      onEditTask={handleOpenEditModal}
+                      onDeleteTask={handleDeleteTask}
+                    />
+
+                    <KanbanColumn
+                      title={UI_TEXT.STATUS_DONE}
+                      badgeClass="badge-done"
+                      tasks={tasks.filter(t => t.status === 'DONE')}
+                      onStatusChange={handleUpdateTaskStatus}
+                      onEditTask={handleOpenEditModal}
+                      onDeleteTask={handleDeleteTask}
+                    />
+                  </div>
+
+                  {totalPages > 1 && (
+                    <div className="pagination-bar">
+                      <button
+                        className="btn-page"
+                        disabled={currentPage === 0}
+                        onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                      >
+                        {UI_TEXT.PAGE_PREV}
+                      </button>
+                      
+                      <span className="page-info">
+                        {UI_TEXT.PAGE_INFO(currentPage + 1, totalPages)}
+                      </span>
+
+                      <button
+                        className="btn-page"
+                        disabled={currentPage >= totalPages - 1}
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
+                      >
+                        {UI_TEXT.PAGE_NEXT}
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
+                  {UI_TEXT.NO_PROJECTS}
+                </div>
+              )}
+            </main>
+          </div>
+
+          {/* 모달 0. 신규 사용자 등록 */}
+          {showNewUserModal && (
+            <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowNewUserModal(false); }}>
+              <div className="modal-card">
+                <div className="modal-header-row">
+                  <div className="modal-header">{UI_TEXT.MODAL_NEW_USER_TITLE}</div>
+                  <button type="button" className="btn-modal-close-icon" onClick={() => setShowNewUserModal(false)} title={UI_TEXT.TOOLTIP_CLOSE}>✕</button>
+                </div>
+                <form onSubmit={handleCreateUser} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div className="form-group">
+                    <label>{UI_TEXT.LABEL_USER_NAME}</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder={UI_TEXT.PLACEHOLDER_USER_NAME}
+                      value={newUserName}
+                      onChange={(e) => setNewUserName(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="modal-actions">
+                    <button
+                      type="button"
+                      className="btn-cancel"
+                      onClick={() => setShowNewUserModal(false)}
+                    >
+                      {UI_TEXT.BTN_CANCEL}
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn-submit"
+                    >
+                      {UI_TEXT.BTN_SUBMIT}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* 모달 1. 신규 작업 생성 */}
+          {showNewTaskModal && (
+            <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowNewTaskModal(false); }}>
+              <div className="modal-card">
+                <div className="modal-header-row">
+                  <div className="modal-header">{UI_TEXT.MODAL_NEW_TASK_TITLE}</div>
+                  <button type="button" className="btn-modal-close-icon" onClick={() => setShowNewTaskModal(false)} title={UI_TEXT.TOOLTIP_CLOSE}>✕</button>
+                </div>
+                <form onSubmit={handleCreateTask} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div className="form-group">
+                    <label>{UI_TEXT.LABEL_TITLE}</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder={UI_TEXT.PLACEHOLDER_TASK_TITLE}
+                      value={newTaskTitle}
+                      onChange={(e) => setNewTaskTitle(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>{UI_TEXT.LABEL_DESCRIPTION}</label>
+                    <textarea
+                      rows="3"
+                      placeholder={UI_TEXT.PLACEHOLDER_TASK_DESC}
+                      value={newTaskDesc}
+                      onChange={(e) => setNewTaskDesc(e.target.value)}
+                    ></textarea>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <div className="form-group">
+                      <label>{UI_TEXT.LABEL_ASSIGNEE}</label>
+                      <select
+                        value={newTaskAssignee}
+                        onChange={(e) => setNewTaskAssignee(e.target.value)}
+                      >
+                        <option value="">{UI_TEXT.OPTION_UNASSIGNED}</option>
+                        {members.map(m => (
+                          <option key={m.userId} value={m.userId}>{m.userName} ({m.role})</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label>{UI_TEXT.LABEL_DUE_DATE}</label>
+                      <input
+                        type="date"
+                        value={newTaskDueDate}
+                        onChange={(e) => setNewTaskDueDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {projectLabels.length > 0 && (
+                    <div className="form-group">
+                      <label>{UI_TEXT.LABEL_TAGS}</label>
+                      <div className="labels-selector">
+                        {projectLabels.map(l => {
+                          const isSelected = newTaskLabelIds.includes(l.id);
+                          return (
+                            <span
+                              key={l.id}
+                              className={`label-checkbox-tag ${isSelected ? 'selected' : ''}`}
+                              style={{ backgroundColor: isSelected ? l.color : '#ffffff' }}
+                              onClick={() => toggleLabelSelection(l.id, true)}
+                            >
+                              🏷️ {l.name}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="modal-actions">
+                    <button
+                      type="button"
+                      className="btn-cancel"
+                      onClick={() => setShowNewTaskModal(false)}
+                    >
+                      {UI_TEXT.BTN_CANCEL}
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn-submit"
+                    >
+                      {UI_TEXT.BTN_SUBMIT}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* 모달 1-2. 작업 상세 및 수정 모달 (1단 깔끔한 레이아웃) */}
+          {showEditTaskModal && editingTask && (
+            <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowEditTaskModal(false); }}>
+              <div className="modal-card">
+                <div className="modal-header-row">
+                  <div className="modal-header">{UI_TEXT.MODAL_EDIT_TASK_TITLE}</div>
+                  <button type="button" className="btn-modal-close-icon" onClick={() => setShowEditTaskModal(false)} title={UI_TEXT.TOOLTIP_CLOSE}>✕</button>
+                </div>
+
+                <form onSubmit={handleSaveTaskEdit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div className="form-group">
+                    <label>{UI_TEXT.LABEL_TITLE}</label>
+                    <input
+                      type="text"
+                      required
+                      value={editTaskTitle}
+                      onChange={(e) => setEditTaskTitle(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>{UI_TEXT.LABEL_DESCRIPTION}</label>
+                    <textarea
+                      rows="3"
+                      value={editTaskDesc}
+                      onChange={(e) => setEditTaskDesc(e.target.value)}
+                      placeholder={UI_TEXT.PLACEHOLDER_TASK_EDIT_DESC}
+                    ></textarea>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <div className="form-group">
+                      <label>{UI_TEXT.LABEL_STATUS}</label>
+                      <select
+                        value={editTaskStatus}
+                        onChange={(e) => setEditTaskStatus(e.target.value)}
+                      >
+                        <option value="TODO">{UI_TEXT.STATUS_TODO}</option>
+                        <option value="IN_PROGRESS">{UI_TEXT.STATUS_IN_PROGRESS}</option>
+                        <option value="DONE">{UI_TEXT.STATUS_DONE}</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label>{UI_TEXT.LABEL_ASSIGNEE}</label>
+                      <select
+                        value={editTaskAssignee}
+                        onChange={(e) => setEditTaskAssignee(e.target.value)}
+                      >
+                        <option value="">{UI_TEXT.OPTION_UNASSIGNED}</option>
+                        {members.map(m => (
+                          <option key={m.userId} value={m.userId}>{m.userName} ({m.role})</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>{UI_TEXT.LABEL_DUE_DATE}</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input
+                        type="date"
+                        value={editTaskDueDate}
+                        onChange={(e) => setEditTaskDueDate(e.target.value)}
+                        style={{ flex: 1 }}
+                      />
+                      {editTaskDueDate && (() => {
+                        const info = getDueInfo(editTaskDueDate, editTaskStatus === 'DONE');
+                        return info ? <span className={`card-due-badge ${info.className}`}>{info.text}</span> : null;
+                      })()}
+                    </div>
+                  </div>
+
+                  {projectLabels.length > 0 && (
+                    <div className="form-group">
+                      <label>{UI_TEXT.LABEL_TAGS}</label>
+                      <div className="labels-selector">
+                        {projectLabels.map(l => {
+                          const isSelected = editTaskLabelIds.includes(l.id);
+                          return (
+                            <span
+                              key={l.id}
+                              className={`label-checkbox-tag ${isSelected ? 'selected' : ''}`}
+                              style={{ backgroundColor: isSelected ? l.color : '#ffffff' }}
+                              onClick={() => toggleLabelSelection(l.id, false)}
+                            >
+                              🏷️ {l.name}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="modal-actions">
+                    <button
+                      type="button"
+                      className="btn-cancel"
+                      onClick={() => setShowEditTaskModal(false)}
+                    >
+                      {UI_TEXT.BTN_CANCEL}
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn-submit"
+                    >
+                      {UI_TEXT.BTN_SAVE}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* 모달 2. 프로젝트 생성 */}
+          {showNewProjectModal && (
+            <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowNewProjectModal(false); }}>
+              <div className="modal-card">
+                <div className="modal-header-row">
+                  <div className="modal-header">{UI_TEXT.MODAL_NEW_PROJECT_TITLE}</div>
+                  <button type="button" className="btn-modal-close-icon" onClick={() => setShowNewProjectModal(false)} title={UI_TEXT.TOOLTIP_CLOSE}>✕</button>
+                </div>
+                <form onSubmit={handleCreateProject} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div className="form-group">
+                    <label>{UI_TEXT.LABEL_PROJECT_NAME}</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder={UI_TEXT.PLACEHOLDER_PROJECT_NAME}
+                      value={newProjectName}
+                      onChange={(e) => setNewProjectName(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>{UI_TEXT.LABEL_DESCRIPTION}</label>
+                    <textarea
+                      rows="3"
+                      placeholder={UI_TEXT.PLACEHOLDER_PROJECT_DESC}
+                      value={newProjectDesc}
+                      onChange={(e) => setNewProjectDesc(e.target.value)}
+                    ></textarea>
+                  </div>
+
+                  <div className="modal-actions">
+                    <button
+                      type="button"
+                      className="btn-cancel"
+                      onClick={() => setShowNewProjectModal(false)}
+                    >
+                      {UI_TEXT.BTN_CANCEL}
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn-submit"
+                    >
+                      {UI_TEXT.BTN_SUBMIT}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* 모달 2-2. 프로젝트 정보 수정 */}
+          {showEditProjectModal && selectedProject && (
+            <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowEditProjectModal(false); }}>
+              <div className="modal-card">
+                <div className="modal-header-row">
+                  <div className="modal-header">{UI_TEXT.MODAL_EDIT_PROJECT_TITLE}</div>
+                  <button type="button" className="btn-modal-close-icon" onClick={() => setShowEditProjectModal(false)} title={UI_TEXT.TOOLTIP_CLOSE}>✕</button>
+                </div>
+                <form onSubmit={handleUpdateProject} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div className="form-group">
+                    <label>{UI_TEXT.LABEL_PROJECT_NAME}</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder={UI_TEXT.PLACEHOLDER_PROJECT_NAME}
+                      value={editProjectName}
+                      onChange={(e) => setEditProjectName(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>{UI_TEXT.LABEL_DESCRIPTION}</label>
+                    <textarea
+                      rows="3"
+                      placeholder={UI_TEXT.PLACEHOLDER_PROJECT_DESC}
+                      value={editProjectDesc}
+                      onChange={(e) => setEditProjectDesc(e.target.value)}
+                    ></textarea>
+                  </div>
+
+                  <div className="modal-actions">
+                    <button
+                      type="button"
+                      className="btn-cancel"
+                      onClick={() => setShowEditProjectModal(false)}
+                    >
+                      {UI_TEXT.BTN_CANCEL}
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn-submit"
+                    >
+                      {UI_TEXT.BTN_SAVE}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* 모달 3. 멤버 관리 */}
+          {showMembersModal && (
+            <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowMembersModal(false); }}>
+              <div className="modal-card" style={{ maxWidth: '560px' }}>
+                <div className="modal-header-row">
+                  <div className="modal-header">{UI_TEXT.MODAL_MEMBERS_TITLE}</div>
+                  <button type="button" className="btn-modal-close-icon" onClick={() => setShowMembersModal(false)} title={UI_TEXT.TOOLTIP_CLOSE}>✕</button>
+                </div>
+                
+                {/* 1. 멤버 초대 */}
+                <form onSubmit={handleInviteMember} style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label>{UI_TEXT.LABEL_USER_SELECT}</label>
+                    <select
+                      required
+                      value={inviteUserId}
+                      onChange={(e) => setInviteUserId(e.target.value)}
+                    >
+                      <option value="">{UI_TEXT.OPTION_SELECT_USER}</option>
+                      {users.map(u => (
+                        <option key={u.id} value={u.id}>{u.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group" style={{ width: '110px' }}>
+                    <label>{UI_TEXT.LABEL_ROLE_SELECT}</label>
+                    <select
+                      value={inviteRole}
+                      onChange={(e) => setInviteRole(e.target.value)}
+                    >
+                      <option value="MEMBER">MEMBER</option>
+                      <option value="ADMIN">ADMIN</option>
+                    </select>
+                  </div>
+
+                  <button type="submit" className="btn-submit" style={{ padding: '8px 14px' }}>
+                    {UI_TEXT.BTN_INVITE}
+                  </button>
+                </form>
+
+                {/* 2. 멤버 목록 */}
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '6px' }}>
+                    {UI_TEXT.MEMBERS_LIST_TITLE(members.length)}
+                  </div>
+                  <table className="member-table">
+                    <thead>
+                      <tr>
+                        <th>{UI_TEXT.TH_USER}</th>
+                        <th>{UI_TEXT.TH_ROLE_CHANGE}</th>
+                        <th>{UI_TEXT.TH_JOINED_AT}</th>
+                        <th style={{ textAlign: 'center' }}>{UI_TEXT.TH_MANAGE}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {members.map(m => (
+                        <tr key={m.userId}>
+                          <td style={{ fontWeight: '600' }}>{m.userName}</td>
+                          <td>
+                            <select
+                              className="role-select"
+                              value={m.role}
+                              onChange={(e) => handleUpdateMemberRole(m.userId, e.target.value)}
+                            >
+                              <option value="OWNER">OWNER</option>
+                              <option value="ADMIN">ADMIN</option>
+                              <option value="MEMBER">MEMBER</option>
+                            </select>
+                          </td>
+                          <td style={{ color: '#94a3b8', fontSize: '11px' }}>
+                            {new Date(m.joinedAt).toLocaleDateString()}
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            <button
+                              className="btn-remove-member"
+                              onClick={() => handleRemoveMember(m.userId)}
+                              title={UI_TEXT.TOOLTIP_REMOVE_MEMBER}
+                            >
+                              ✕
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="modal-actions">
+                  <button
+                    type="button"
+                    className="btn-cancel"
+                    onClick={() => setShowMembersModal(false)}
+                  >
+                    {UI_TEXT.BTN_CLOSE}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 모달 4. 라벨 관리 */}
+          {showLabelsModal && (() => {
+            const isManager = projectDetail?.myRole === 'OWNER' || projectDetail?.myRole === 'ADMIN';
+            return (
+              <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowLabelsModal(false); }}>
+                <div className="modal-card" style={{ maxWidth: '520px' }}>
+                  <div className="modal-header-row">
+                    <div className="modal-header">{UI_TEXT.MODAL_LABELS_TITLE}</div>
+                    <button type="button" className="btn-modal-close-icon" onClick={() => setShowLabelsModal(false)} title={UI_TEXT.TOOLTIP_CLOSE}>✕</button>
+                  </div>
+
+                  {/* 1. 라벨 추가 폼 (관리자 전용) */}
+                  {isManager ? (
+                    <form onSubmit={handleCreateLabel} style={{ background: '#f8fafc', padding: '14px', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div className="form-group">
+                        <label>{UI_TEXT.LABEL_NAME}</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder={UI_TEXT.PLACEHOLDER_LABEL_NAME}
+                          value={newLabelName}
+                          onChange={(e) => setNewLabelName(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label>{UI_TEXT.LABEL_COLOR}</label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          {COLOR_PRESETS.map(c => (
+                            <button
+                              key={c}
+                              type="button"
+                              onClick={() => setNewLabelColor(c)}
+                              style={{
+                                width: '26px',
+                                height: '26px',
+                                borderRadius: '50%',
+                                backgroundColor: c,
+                                border: newLabelColor === c ? '3px solid #0f172a' : '2px solid #ffffff',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                                cursor: 'pointer',
+                                transform: newLabelColor === c ? 'scale(1.15)' : 'scale(1)',
+                                transition: 'all 0.1s'
+                              }}
+                              title={c}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="btn-submit"
+                        style={{ marginTop: '4px', alignSelf: 'flex-end', padding: '7px 14px' }}
+                      >
+                        {UI_TEXT.BTN_ADD_LABEL}
+                      </button>
+                    </form>
+                  ) : (
+                    <div style={{ background: '#f1f5f9', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', color: '#64748b' }}>
+                      💡 라벨 추가 및 삭제는 프로젝트 관리자(OWNER, ADMIN)만 가능합니다.
+                    </div>
+                  )}
+
+                  {/* 2. 등록된 라벨 목록 */}
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>
+                      {UI_TEXT.LABELS_LIST_TITLE(projectLabels.length)}
+                    </div>
+
+                    {projectLabels.length === 0 ? (
+                      <div style={{ fontSize: '12px', color: '#94a3b8', padding: '16px 0', textAlign: 'center' }}>
+                        {UI_TEXT.NO_LABELS}
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', maxHeight: '180px', overflowY: 'auto', padding: '4px 0' }}>
+                        {projectLabels.map(l => (
+                          <div
+                            key={l.id}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              backgroundColor: l.color,
+                              color: '#ffffff',
+                              padding: '4px 10px',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              fontWeight: '700',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                            }}
+                          >
+                            <span>🏷️ {l.name}</span>
+                            {isManager && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteLabel(l.id)}
+                                title={UI_TEXT.TOOLTIP_DELETE_LABEL}
+                                style={{
+                                  background: 'rgba(0,0,0,0.2)',
+                                  border: 'none',
+                                  color: '#ffffff',
+                                  borderRadius: '50%',
+                                  width: '16px',
+                                  height: '16px',
+                                  fontSize: '10px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="modal-actions">
+                    <button
+                      type="button"
+                      className="btn-cancel"
+                      onClick={() => setShowLabelsModal(false)}
+                    >
+                      {UI_TEXT.BTN_CLOSE}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* 토스트 알림 */}
+          <div className="toast-container">
+            {toasts.map(t => (
+              <div key={t.id} className={`toast-item ${t.type}`}>
+                <div className="toast-icon">
+                  {t.type === 'error' && '🚨'}
+                  {t.type === 'success' && '✅'}
+                  {t.type === 'info' && 'ℹ️'}
+                </div>
+                <div className="toast-content">
+                  {t.title && <div className="toast-title">{t.title}</div>}
+                  <div className="toast-message">{t.message}</div>
+                </div>
+                <button
+                  className="toast-close-btn"
+                  onClick={() => removeToast(t.id)}
+                  title={UI_TEXT.TOOLTIP_CLOSE}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function KanbanColumn({ title, badgeClass, tasks, onStatusChange, onEditTask, onDeleteTask }) {
+      return (
+        <div className="kanban-column">
+          <div className="column-header">
+            <span className="column-title">{title}</span>
+            <span className={`column-badge ${badgeClass}`}>{tasks.length}</span>
+          </div>
+
+          <div className="task-list">
+            {tasks.length === 0 ? (
+              <div className="empty-state">{UI_TEXT.NO_TASKS}</div>
+            ) : (
+              tasks.map(t => {
+                const dueInfo = getDueInfo(t.dueDate, t.status === 'DONE');
+
+                return (
+                  <div key={t.id} className="task-card">
+                    {t.labels && t.labels.length > 0 && (
+                      <div className="card-labels">
+                        {t.labels.map(l => (
+                          <span key={l.id} className="label-tag" style={{ backgroundColor: l.color }}>
+                            {l.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="task-card-header">
+                      <div
+                        className="task-title"
+                        onClick={() => onEditTask(t)}
+                        title={UI_TEXT.TOOLTIP_TASK_DETAIL}
+                      >
+                        {t.title}
+                      </div>
+
+                      <div className="card-top-actions">
+                        <button
+                          className="btn-edit-task"
+                          onClick={() => onEditTask(t)}
+                          title={UI_TEXT.TOOLTIP_EDIT_TASK}
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          className="btn-delete-task"
+                          onClick={() => onDeleteTask(t.id)}
+                          title={UI_TEXT.TOOLTIP_DELETE_TASK}
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+
+                    {t.description && (
+                      <div className="task-desc">{t.description}</div>
+                    )}
+
+                    {dueInfo && (
+                      <div className={`card-due-badge ${dueInfo.className}`}>
+                        {dueInfo.text}
+                      </div>
+                    )}
+
+                    <div className="task-footer">
+                      <div className="assignee-box">
+                        <div className="assignee-avatar">
+                          {t.assigneeName ? t.assigneeName.charAt(0) : '?'}
+                        </div>
+                        <span className="assignee-name">
+                          {t.assigneeName ? t.assigneeName : UI_TEXT.UNASSIGNED}
+                        </span>
+                      </div>
+
+                      <div className="status-actions">
+                        {t.status !== 'TODO' && (
+                          <button
+                            className="btn-action"
+                            onClick={() => onStatusChange(t, 'TODO')}
+                            title={UI_TEXT.TOOLTIP_MOVE_TODO}
+                          >
+                            ←
+                          </button>
+                        )}
+                        {t.status !== 'IN_PROGRESS' && (
+                          <button
+                            className="btn-action"
+                            onClick={() => onStatusChange(t, 'IN_PROGRESS')}
+                            title={UI_TEXT.TOOLTIP_MOVE_PROGRESS}
+                          >
+                            ▶
+                          </button>
+                        )}
+                        {t.status !== 'DONE' && (
+                          <button
+                            className="btn-action btn-done"
+                            onClick={() => onStatusChange(t, 'DONE')}
+                            title={UI_TEXT.TOOLTIP_MOVE_DONE}
+                          >
+                            ✓
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
