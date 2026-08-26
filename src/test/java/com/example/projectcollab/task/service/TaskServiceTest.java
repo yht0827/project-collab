@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 
+import org.mockito.ArgumentMatchers;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -18,10 +20,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.example.projectcollab.common.exception.BusinessException;
 import com.example.projectcollab.common.exception.ErrorCode;
+import com.example.projectcollab.label.repository.LabelRepository;
 import com.example.projectcollab.project.entity.Project;
 import com.example.projectcollab.project.entity.ProjectMember;
 import com.example.projectcollab.project.repository.ProjectMemberRepository;
@@ -54,6 +58,9 @@ class TaskServiceTest {
 
 	@Mock
 	private UserService userService;
+
+	@Mock
+	private LabelRepository labelRepository;
 
 	@Nested
 	@DisplayName("작업 생성 단위 테스트")
@@ -123,16 +130,17 @@ class TaskServiceTest {
 			Long projectId = 100L;
 			Long currentUserId = 1L;
 			Pageable pageable = PageRequest.of(0, 10);
-			TaskDto.SearchRequest condition = new TaskDto.SearchRequest(TaskStatus.TODO, "검색어");
+			TaskDto.SearchRequest condition = TaskDto.SearchRequest.of(TaskStatus.TODO, "검색어");
 
 			Project project = Project.createProject("프로젝트", "설명");
 			ReflectionTestUtils.setField(project, "id", projectId);
 			Task task = Task.createTask(project, null, "제목", "설명");
+			ReflectionTestUtils.setField(task, "id", 10L);
 			Page<Task> taskPage = new PageImpl<>(List.of(task), pageable, 1);
 
 			given(projectRepository.existsById(projectId)).willReturn(true);
 			given(projectMemberRepository.existsByProjectIdAndUserId(projectId, currentUserId)).willReturn(true);
-			given(taskRepository.searchTasks(projectId, TaskStatus.TODO, "검색어", pageable)).willReturn(taskPage);
+			given(taskRepository.findAll(ArgumentMatchers.<Specification<Task>>any(), eq(pageable))).willReturn(taskPage);
 
 			Page<TaskDto.Response> response = taskService.getTasks(currentUserId, projectId, condition, pageable);
 
@@ -158,13 +166,11 @@ class TaskServiceTest {
 			User assignee = User.createUser("담당자");
 			ReflectionTestUtils.setField(assignee, "id", assigneeId);
 
-			ProjectMember assigneeMember = ProjectMember.createMember(project, assignee);
 			Task task = Task.createTask(project, assignee, "제목", "설명");
 			ReflectionTestUtils.setField(task, "id", taskId);
 
 			TaskDto.UpdateRequest request = new TaskDto.UpdateRequest("수정 제목", "수정 내용", null, TaskStatus.IN_PROGRESS);
 
-			given(projectMemberService.findMember(projectId, assigneeId)).willReturn(assigneeMember);
 			given(taskRepository.findById(taskId)).willReturn(Optional.of(task));
 
 			TaskDto.Response response = taskService.updateTask(assigneeId, projectId, taskId, request);
@@ -194,7 +200,8 @@ class TaskServiceTest {
 
 			TaskDto.UpdateRequest request = new TaskDto.UpdateRequest("수정 제목", "수정 내용", null, TaskStatus.IN_PROGRESS);
 
-			given(projectMemberService.findMember(projectId, otherMemberId)).willReturn(otherMember);
+			given(projectMemberService.validateManager(projectId, otherMemberId))
+				.willThrow(new BusinessException(ErrorCode.ACCESS_DENIED));
 			given(taskRepository.findById(taskId)).willReturn(Optional.of(task));
 
 			assertThatThrownBy(() -> taskService.updateTask(otherMemberId, projectId, taskId, request))

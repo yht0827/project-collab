@@ -3,6 +3,8 @@ package com.example.projectcollab.task.controller;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -48,6 +50,9 @@ class TaskControllerTest {
 
 	@Autowired
 	private TaskService taskService;
+
+	@Autowired
+	private com.example.projectcollab.label.service.LabelService labelService;
 
 	private Long ownerId;
 	private Long memberId;
@@ -125,6 +130,24 @@ class TaskControllerTest {
 				.andExpect(jsonPath("$.data.content.length()").value(1))
 				.andExpect(jsonPath("$.data.content[0].title").value("Spring Boot 구현"));
 		}
+
+		@Test
+		@DisplayName("성공: 라벨 ID 필터를 적용하여 해당 라벨이 부착된 작업만 조회한다 (200 OK)")
+		void successWithLabelFilter() throws Exception {
+			com.example.projectcollab.label.dto.LabelDto.Response backendLabel = labelService.createLabel(
+				ownerId, projectId, new com.example.projectcollab.label.dto.LabelDto.CreateRequest("Backend", "#10b981"));
+
+			taskService.createTask(ownerId, projectId, new TaskDto.CreateRequest("백엔드 작업", "설명", null, null, List.of(backendLabel.id())));
+			taskService.createTask(ownerId, projectId, new TaskDto.CreateRequest("프론트엔드 작업", "설명", null, null, null));
+
+			mockMvc.perform(get("/api/v1/projects/{projectId}/tasks", projectId)
+					.header("X-User-Id", memberId)
+					.param("labelId", backendLabel.id().toString()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.success").value(true))
+				.andExpect(jsonPath("$.data.content.length()").value(1))
+				.andExpect(jsonPath("$.data.content[0].title").value("백엔드 작업"));
+		}
 	}
 
 	@Nested
@@ -146,6 +169,29 @@ class TaskControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.title").value("수정된 제목"))
 				.andExpect(jsonPath("$.data.status").value("IN_PROGRESS"));
+		}
+
+		@Test
+		@DisplayName("성공: 마감일 및 라벨을 포함한 전체 필드를 수정할 수 있다 (200 OK)")
+		void successWithFullFields() throws Exception {
+			var label1 = labelService.createLabel(ownerId, projectId, new com.example.projectcollab.label.dto.LabelDto.CreateRequest("Backend", "#10b981"));
+			var label2 = labelService.createLabel(ownerId, projectId, new com.example.projectcollab.label.dto.LabelDto.CreateRequest("Frontend", "#3b82f6"));
+
+			TaskDto.Response task = taskService.createTask(ownerId, projectId,
+				new TaskDto.CreateRequest("원래 제목", "원래 설명", memberId, java.time.LocalDate.of(2026, 8, 20), List.of(label1.id())));
+
+			TaskDto.UpdateRequest updateRequest = new TaskDto.UpdateRequest(
+				"수정된 제목", "수정된 설명", memberId, TaskStatus.IN_PROGRESS, java.time.LocalDate.of(2026, 9, 15), List.of(label2.id()));
+
+			mockMvc.perform(put("/api/v1/projects/{projectId}/tasks/{taskId}", projectId, task.id())
+					.header("X-User-Id", memberId)
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(updateRequest)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.title").value("수정된 제목"))
+				.andExpect(jsonPath("$.data.description").value("수정된 설명"))
+				.andExpect(jsonPath("$.data.dueDate").value("2026-09-15"))
+				.andExpect(jsonPath("$.data.labels[0].name").value("Frontend"));
 		}
 
 		@Test

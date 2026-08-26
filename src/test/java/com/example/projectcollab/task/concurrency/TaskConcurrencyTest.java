@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
+import com.example.projectcollab.label.repository.LabelRepository;
+import com.example.projectcollab.label.repository.TaskLabelRepository;
 import com.example.projectcollab.project.entity.Project;
 import com.example.projectcollab.project.entity.ProjectMember;
 import com.example.projectcollab.project.repository.ProjectMemberRepository;
@@ -45,6 +47,12 @@ class TaskConcurrencyTest {
 	@Autowired
 	private UserRepository userRepository;
 
+	@Autowired
+	private LabelRepository labelRepository;
+
+	@Autowired
+	private TaskLabelRepository taskLabelRepository;
+
 	private User userA;
 	private User userB;
 	private Project project;
@@ -64,6 +72,8 @@ class TaskConcurrencyTest {
 
 	@AfterEach
 	void tearDown() {
+		taskLabelRepository.deleteAll();
+		labelRepository.deleteAll();
 		taskRepository.deleteAll();
 		projectMemberRepository.deleteAll();
 		projectRepository.deleteAll();
