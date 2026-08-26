@@ -43,7 +43,7 @@ public class TaskController {
 		return ApiResponse.toCreated(taskService.createTask(currentUserId, projectId, request));
 	}
 
-	@Operation(summary = "작업 목록 조회 (상태 필터 + 키워드 검색 + 페이징)")
+	@Operation(summary = "작업 목록 조회 (상태 필터 + 라벨 필터 + 키워드 검색 + 페이징)")
 	@GetMapping
 	public ResponseEntity<ApiResponse<Page<TaskDto.Response>>> getTasks(
 		@CurrentUserId Long currentUserId,
